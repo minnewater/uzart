@@ -1,0 +1,108 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    position: relative;
+    width: 220px;
+    height: 100%;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: width 0.5s ease;
+}
+
+@media only screen and (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        transition: width 0.5s ease;
+    }
+}
+
+.sidebar .logo {
+    height: 160px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sidebar .logo img {
+    height: 160px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+.sidebar ul li {
+    width: 100%;
+}
+.sidebar ul li a {
+    display: flex;
+    padding: 15px;
+    color: white;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.3s ease;
+}
+.sidebar ul li a:hover {
+    background: #34495e;
+}
+.menu-icon {
+    font-size: 15px;
+    margin-right: 10px;
+}
+.menu-text {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.sidebar:not(.collapsed) .menu-text {
+    opacity: 1;
+}
+.sidebar.collapsed {
+    width: 60px;
+    padding-top: 160px;
+}
+.sidebar.collapsed .logo {
+    display: none;
+}
+.sidebar.collapsed .menu-text {
+    opacity: 0;
+    display: none;
+}
+.toggle-btn {
+    position: absolute;
+    top: 10px;
+    right: 2px;
+    background: #2c3e50;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+.logout-btn {
+    margin-top: auto;
+    padding: 15px;
+    background: #e74c3c;
+    color: white;
+    text-decoration: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+.logout-btn:hover {
+    background: #c0392b;
+}
+.content {
+    flex-grow: 1;
+    padding: 10px;
+    transition: margin-left 0.5s ease;
+}
+

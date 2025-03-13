@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>보고서</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #pdf-container { width: 90%; margin: auto; border: 1px solid #ddd; text-align: center; }
+        canvas { display: block; margin: 10px auto; border: 1px solid #000; }
+    </style>
+</head>
+<body>
+    <h1>📄 보고서 보기</h1>
+    <div id="pdf-container"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof pdfjsLib === "undefined") {
+                //console.error("❌ pdf.js가 로드되지 않았습니다. 올바른 경로를 확인하세요.");
+                return;
+            }
+
+            // ✅ pdf.worker.js 경로 설정 (서버 내부 파일 사용)
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/uzart/www/js/pdf.worker.min.js";
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var pdfUrl = urlParams.get('pdf');
+            //console.log("📄 PDF URL:", pdfUrl);
+
+            if (!pdfUrl) {
+                document.body.innerHTML += "<p>❌ PDF 파일을 찾을 수 없습니다.</p>";
+                return;
+            }
+
+            var pdfContainer = document.getElementById("pdf-container");
+
+            // ✅ PDF 문서 로드
+            pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                //console.log("📄 총 페이지 수:", pdf.numPages);
+
+                // ✅ 모든 페이지 렌더링
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    pdf.getPage(pageNum).then(function(page) {
+                        var scale = 1.5;
+                        var viewport = page.getViewport({ scale: scale });
+
+                        // ✅ 페이지마다 새로운 canvas 생성
+                        var canvas = document.createElement("canvas");
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        pdfContainer.appendChild(canvas);
+
+                        var context = canvas.getContext("2d");
+                        var renderContext = { canvasContext: context, viewport: viewport };
+                        page.render(renderContext);
+                    }).catch(function(error) {
+                        //console.error(`❌ ${pageNum} 페이지 로딩 실패:`, error);
+                    });
+                }
+            }).catch(function(error) {
+                //console.error("❌ PDF 로딩 오류:", error);
+                document.body.innerHTML += "<p>❌ PDF 파일을 불러올 수 없습니다.</p>";
+            });
+        });
+    </script>
+
+    <!-- ✅ 서버 내부 pdf.js 사용 -->
+    <script src="/uzart/www/js/pdf.min.js"></script>
+    <script src="/uzart/www/js/pdf.worker.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,243 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* ✅ 버튼을 우측으로 고정 */
+    gap: 10px;
+}
+
+.filter-form .search-button {
+    margin-left: auto;
+}
+
+.filter-form input,
+.filter-form select {
+    padding: 2px;
+    margin-right: 10px;
+}
+
+/* 필터 & 사용자 추가 버튼 정렬 */
+.filter-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+/* ✅ 사용자 추가 버튼 스타일 */
+.user-button-container {
+    margin-top: 10px;
+    text-align: right; /* ✅ 오른쪽 정렬 */
+}
+
+/* 사용자 추가 버튼 스타일 */
+.add-user-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.add-user-btn:hover {
+    background-color: #218838;
+}
+
+.view-user-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.view-user-btn:hover {
+    background-color: #218838;
+}
+
+/* ✅ 다운로드 버튼 컬럼 크기 조정 */
+.down-col {
+    width: 100px;  /* ✅ 원하는 크기로 조정 */
+    text-align: center;
+}
+
+/* .down-col button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+} */
+
+/* ✅ 다운로드 버튼 스타일 */
+.download-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.download-btn:hover {
+    background-color: #0056b3;
+}
+
+/* 모달 창 기본 숨김 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    width: 300px;
+    text-align: left;
+}
+
+/* 모달 버튼 정렬 */
+.modal-buttons {
+    margin-top: 15px;
+}
+
+.modal-buttons button {
+    margin: 5px;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* 모달 내부 스타일 */
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* ✅ 입력 필드 사이 간격 */
+}
+
+/* 입력 필드 스타일 */
+.modal-content label {
+    font-weight: bold;
+    display: block; /* ✅ label을 블록 요소로 변환 → 자동 줄 바꿈 */
+    margin-top: 10px;
+}
+
+/* 입력 필드 스타일 */
+.modal-content input {
+    width: 90%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#cancelModal {
+    background-color: #dc3545;
+    color: white;
+}
+
+#confirmAddUser {
+    background-color: #007bff;
+    color: white;
+}
+
+/* ✅ 알림 메시지 스타일 */
+.alert-message {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1000;
+}
+
+/* 성공 알림 (초록색) */
+.alert-message.success {
+    background-color: #28a745;
+    color: white;
+}
+
+/* 실패 알림 (빨간색) */
+.alert-message.error {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* API Key 블러 처리 */
+.api-key {
+    cursor: pointer;
+    font-family: monospace;
+    user-select: none;
+    transition: color 0.3s;
+}
+
+.api-key.blurred {
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 페이지네이션 컨테이너 스타일 */
+#pagination {
+    text-align: center; /* ✅ 가운데 정렬 */
+    margin-top: 20px; /* ✅ 위쪽 여백 추가 */
+}
+
+/* 페이지네이션 버튼 스타일 */
+#pagination .page-btn {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 8px 10px; /* ✅ 버튼 패딩 */
+    margin: 5px; /* ✅ 버튼 사이 간격 */
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px; /* ✅ 버튼 모서리 둥글게 */
+    transition: background-color 0.3s;
+}
+
+/* 현재 페이지 버튼 스타일 */
+#pagination .page-btn.active {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #0056b3;
+}
+
+/* 버튼에 마우스를 올렸을 때 */
+#pagination .page-btn:hover {
+    background-color: #ddd;
+}
+

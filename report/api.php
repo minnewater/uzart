@@ -1,0 +1,175 @@
+<?
+
+//// 디버깅 로그 파일
+//file_put_contents('/tmp/debug.log', json_encode([
+//    'timestamp' => date('Y-m-d H:i:s'),
+//    'method' => $_SERVER['REQUEST_METHOD'],
+//    'uri' => $_SERVER['REQUEST_URI'],
+//    'headers' => getallheaders(),
+//    'authorization_header' => $_SERVER['AUTH_HEADER'] ?? null,
+//    'api_key' => str_replace("Bearer ", "", $_SERVER['AUTH_HEADER'] ?? '')
+//    //    'body' => file_get_contents('php://input')
+//], JSON_PRETTY_PRINT), FILE_APPEND);
+
+// 공통 설정 파일 포함
+include_once(__DIR__ . "/_common.php");
+
+// 데이터베이스 접속 설정 파일 로드
+if (!file_exists($config_file)) {
+    http_response_code(500);
+    //echo json_encode(["error" => "Database configuration file not found"]);
+    exit;
+}
+include_once($config_file);
+
+/**
+ * 로깅 함수
+ * @param string $level 로그 수준 (INFO, ERROR 등)
+ * @param string $message 로그 메시지
+ * @param string $hn 요청한 서버의 Hostname
+ * @param string $ip 요청한 서버의 IP 주소
+ */
+//function log_message($level, $message, $client_name, $hn, $ip, $conn) {
+//    // 날짜 별 로그 파일
+//    $log_table = 'uz_auditlog_' . date('Y_m_d'); //  테이블 이름을 YYYY-MM-DD.log 형식으로 설정
+//    $check_log_table_query = "
+//	SELECT EXISTS (
+//	  SELECT FROM information_schema.tables
+//	  WHERE table_name = :table_name
+//	)
+//    ";
+//    $chkLog_stmt = $conn->prepare($check_log_table_query);
+//    $chkLog_stmt->bindValue(':table_name', $log_table);
+//    $chkLog_stmt->execute();
+//    $log_table_exists = $chkLog_stmt->fetchColumn();
+//
+//    // 테이블 없으면 생성
+//    if (!$log_table_exists) {
+//	$create_log_table_query = "
+//	  CREATE TABLE \"$log_table\" (
+//	    id SERIAL PRIMARY KEY,
+//	    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//	    level TEXT NOT NULL,
+//	    message TEXT NOT NULL,
+//	    client TEXT,
+//	    server_name TEXT NOT NULL,
+//	    client_ip TEXT NOT NULL
+//	  )
+//	";
+//	$conn->exec($create_log_table_query);
+//    }
+//
+//    $inst_log_query = "
+//	INSERT INTO \"$log_table\" (level, message, client, server_name, client_ip)
+//	VALUES (:level, :message, :client_name, :server_name, :client_ip)
+//    ";
+//    $inst_log_stmt = $conn->prepare($inst_log_query);
+//    $inst_log_stmt->bindValue(':level', $level, PDO::PARAM_STR);
+//    $inst_log_stmt->bindValue(':message', $message, PDO::PARAM_STR);
+//    $inst_log_stmt->bindValue(':client_name', $client_name, PDO::PARAM_STR);
+//    $inst_log_stmt->bindValue(':server_name', $hn, PDO::PARAM_STR);
+//    $inst_log_stmt->bindValue(':client_ip', $ip, PDO::PARAM_STR);
+//    $inst_log_stmt->execute();
+//}
+
+// 요청 메서드 확인
+$request_method = $_SERVER['REQUEST_METHOD'];
+if ($request_method === 'POST') {
+
+    // 입력 데이터 읽기
+    $input = file_get_contents("php://input");
+    $data = json_decode($input,true);
+
+    // JSON 형식 확인
+    if (json_last_error() !== JSON_ERROR_NONE) {
+	log_message("ERROR", "Invalid JSON data", $client, $hostname, $client_ip, $conn);
+	exit;
+    }	
+
+    // Client IP & Hostname
+    $client_ip = $_SERVER['REMOTE_ADDR']; // 요청한 서버의 IP 주소
+    $hostname = $_SERVER['HTTP_X_HOSTNAME'] ?? 'unknown'; // 호스트 이름 가져오기 or unknown
+
+    try {
+        // 데이터베이스 연결
+	$conn = new PDO("pgsql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+        //$conn = new PDO("pgsql:host=$DB_HOST;dbname=$DB_NAME", $DB_USER, $DB_PASS);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e) {
+        http_response_code(500);
+	log_message("ERROR", "Database connectino failed", $client, $hostname, $client_ip, $conn);
+        exit;
+    }
+
+    // API 요청 처리
+    $api_key = str_replace("Bearer ", "", $_SERVER['AUTH_HEADER']);
+    if (!$api_key) {
+        http_response_code(401);
+        log_message("ERROR", "Missing or invalid API Key in Authorization header API : $api_key", $client, $hostname, $client_ip, $conn);
+        exit;
+    }
+
+    // API 키 인증
+    $chkAPI_stmt = $conn->prepare("SELECT server_name, client FROM api_keys WHERE api_key = :api_key");
+    $chkAPI_stmt->bindParam(':api_key', $api_key);
+    $chkAPI_stmt->execute();
+    $result = $chkAPI_stmt->fetch(PDO::FETCH_ASSOC);
+    $server_name = $result['server_name'];
+    $client = $result['client'];
+
+    if (!$result) {
+        http_response_code(401);
+        log_message("ERROR", "Invalid API Key: $api_key", $client, $hostname, $client_ip, $conn);
+        exit;
+    }
+
+    // JSON 데이터에서 컬럼과 값을 동적으로 생성
+    $columns = implode(", ", array_keys($data));
+    $placeholders = ":" . implode(", :", array_keys($data));
+
+    $inst_stmt = $conn->prepare("INSERT INTO uz_srvdata (client, server_name, $columns) VALUES ('$client', '$server_name', $placeholders)");
+
+    // 데이터 바인딩
+    foreach ($data as $key => $value) {
+	if (is_numeric($value)) {
+          $value = is_float($value + 0) ? (float)$value : (int)$value;
+	}
+	if (is_array($value) || is_object($value)) {
+          $value = json_encode($value);
+	}
+        $inst_stmt->bindValue(":$key", $value);
+    }
+
+    // 쿼리 실행
+    if ($inst_stmt->execute()) {
+        http_response_code(201); // HTTP 201: Created
+        log_message("INFO", "Data saved successfully: $client / $hostname", $client, $hostname, $client_ip, $conn);
+        //echo json_encode(["message" => "Data inserted successfully"]);
+    } else {
+        http_response_code(500); // HTTP 500: Internal Server Error
+        log_message("ERROR", "Data save failed: $client / $hostname", $client, $hostname, $client_ip, $conn);
+        //echo json_encode(["error" => "Failed to insert data"]);
+    }
+
+    // 업로드 디렉토리 설정
+//    $upload_dir = "/data/report/uzart/srv/$server_name/";
+//
+//    // 업로드 디렉토리 및 파일 경로 설정
+//    $file_name = sprintf("%s-%s.json", $hostname, date('Y-m-d')); // 파일 이름을 YYYY-MM-DD.json 형식으로 설정
+//    $file_path = $upload_dir . $file_name;
+//    
+//    // 파일 저장 시도
+//    if (file_put_contents($file_path, $input) !== false) {
+//        http_response_code(201);
+//        log_message("INFO", "Data saved successfully: $client ", $client, $hostname, $client_ip, $conn);
+//    } else {
+//        http_response_code(500);
+//        log_message("ERROR", "Data save failed: $file_path", $client, $hostname, $client_ip, $conn);
+//    }
+
+} else {
+    // POST 외 요청 처리: index.php 호출
+    include(__DIR__ . "/uzart/index.php");
+    exit;
+}
+?>

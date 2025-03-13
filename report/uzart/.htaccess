@@ -1,0 +1,14 @@
+# 디렉터리 인덱싱 금지
+Options -Indexes
+
+# 숨김 파일(.로 시작하는 파일) 접근 차단
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+RewriteEngine On
+
+# uzart.php로 모든 요청을 전달
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ uzart.php [QSA,L]

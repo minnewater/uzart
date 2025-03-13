@@ -1,0 +1,66 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* ✅ 버튼을 우측으로 고정 */
+    gap: 10px;
+}
+
+.filter-form .search-button {
+    margin-left: auto;
+}
+
+.filter-form input,
+.filter-form select {
+    padding: 2px;
+    margin-right: 10px;
+}
+
+
+/* 페이지네이션 컨테이너 스타일 */
+#pagination {
+    text-align: center; /* ✅ 가운데 정렬 */
+    margin-top: 20px; /* ✅ 위쪽 여백 추가 */
+}
+
+/* 페이지네이션 버튼 스타일 */
+#pagination .page-btn {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 8px 10px; /* ✅ 버튼 패딩 */
+    margin: 5px; /* ✅ 버튼 사이 간격 */
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px; /* ✅ 버튼 모서리 둥글게 */
+    transition: background-color 0.3s;
+}
+
+/* 현재 페이지 버튼 스타일 */
+#pagination .page-btn.active {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #0056b3;
+}
+
+/* 버튼에 마우스를 올렸을 때 */
+#pagination .page-btn:hover {
+    background-color: #ddd;
+}

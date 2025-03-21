@@ -17,6 +17,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['dashboardid'])) {
         <div class="login-box">
             <img src="uzart/www/assets/logo.png" alt="Uzart Logo" class="logo">
             <form action="uzart/www/login.php" method="POST">
+    		<input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <input type="text" name="username" placeholder="아이디" required>
                 <input type="password" name="password" placeholder="비밀번호" required>
                 <button type="submit">로그인</button>

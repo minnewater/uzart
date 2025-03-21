@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} POST
+RewriteCond %{REQUEST_URI} ^/uzart$ [NC]
+
+DirectorySlash Off
+
+SetEnvIf Authorization "(.*)" AUTH_HEADER=$1
+RewriteCond %{ENV:AUTH_HEADER} ^Bearer\s(.+)$
+RewriteRule .* - [E=API_KEY:%1]
+
+RewriteRule ^$ ../api.php [L]

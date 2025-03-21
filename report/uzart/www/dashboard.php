@@ -2,6 +2,11 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// CSRF 토큰 유지 (로그인 후 새로 생성되었는지 확인)
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['dashboardid'])) {
     header("Location: /uzart");
     exit();
@@ -16,6 +21,10 @@ include_once __DIR__ . "/../include/_common.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대시보드 - Uzart</title>
     <link rel="stylesheet" href="/uzart/www/css/style.css">
+    <script>
+        var csrfToken = "<?php echo $_SESSION['csrf_token']; ?>";
+        document.cookie = "csrf_token=" + csrfToken;
+    </script>
     <!-- jQuery 라이브러리 -->
     <script src="www/js/jquery-3.6.0.min.js"></script>
     <!-- contentLoader.js 호출 (sidebarToggle.js 제거) -->

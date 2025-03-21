@@ -90,129 +90,102 @@ $pdf->SetAutoPageBreak(true, 10);
 $pdf->AddFont('NanumGothic','','Nanum/NanumGothic.ttf',true);
 $pdf->AddFont('NanumGothic','B','Nanum/NanumGothicBold.ttf',true);
 
-//$pdf->SetCreator(PDF_CREATOR);
-$pdf->SetAuthor('Linux Server Audit');
-$pdf->SetTitle('Linux Server Monthly Report');
-$pdf->SetSubject('Server Inspection Report');
-$pdf->SetMargins(10, 10, 10);
-$pdf->SetAutoPageBreak(TRUE, 10);
-$pdf->AddPage();
-$pdf->SetFont('NanumGothic', '', 10);
-
-// 제목 출력
-$pdf->SetFont('NanumGothic', 'B', 14);
-$pdf->Cell(0, 10, '서버 점검 리포트', 0, 1, 'C');
-$pdf->Ln(5);
-$pdf->SetFont('NanumGothic', '', 10);
-
-foreach ($reports as $row) {
-    $pdf->SetFont('NanumGothic', 'B', 12);
-    $pdf->Cell(0, 10, "서버 정보", 0, 1, 'L');
-    $pdf->SetFont('NanumGothic', '', 10);
-
-    $pdf->MultiCell(0, 6, "서버명: " . $row['server_name'], 0, 'L');
-
-    // 서버 IP 주소 디코드 및 출력
-    $pdf->MultiCell(0, 6, "서버 IP:", 0, 'L');
-    $serverIPs = json_decode($row['sc_srvip'], true);
-    foreach ($serverIPs as $ipInfo) {
-        $pdf->MultiCell(0, 6, "{$ipInfo['sc_srvipId']} - {$ipInfo['sc_srvip']}", 0, 'L');
-    }
-    $pdf->Ln(5);
-
-    $pdf->MultiCell(0, 6, "운영체제: " . $row['sc_os'], 0, 'L');
-    $pdf->MultiCell(0, 6, "커널 버전: " . $row['sc_kernel'], 0, 'L');
-    $pdf->Ln(5);
-
-    $pdf->SetFont('NanumGothic', 'B', 12);
-    $pdf->Cell(0, 10, "네트워크 상태", 0, 1, 'L');
-    $pdf->SetFont('NanumGothic', '', 10);
-
-    // 네트워크 인터페이스 디코드 및 출력
-    $pdf->MultiCell(0, 6, "네트워크 인터페이스:", 0, 'L');
-    $networkInterfaces = json_decode($row['sc_net'], true);
-    foreach ($networkInterfaces as $netInfo) {
-        $pdf->MultiCell(0, 6, "{$netInfo['sc_netId']} - {$netInfo['sc_netRe']}", 0, 'L');
-    }
-    $pdf->Ln(5);
-
-    $pdf->SetFont('NanumGothic', 'B', 12);
-    $pdf->Cell(0, 10, "시스템 리소스", 0, 1, 'L');
-    $pdf->SetFont('NanumGothic', '', 10);
-
-    $pdf->MultiCell(0, 6, "로드 평균 (Load Average): " . $row['sc_avg'], 0, 'L');
-    $pdf->MultiCell(0, 6, "Uptime: " . $row['sc_uptime'], 0, 'L');
-    $pdf->MultiCell(0, 6, "CPU 정보: " . $row['sc_cpuinfo'], 0, 'L');
-    $pdf->MultiCell(0, 6, "CPU 코어 수: " . $row['sc_cpucores'], 0, 'L');
-    $pdf->MultiCell(0, 6, "CPU 사용률: " . $row['sc_cpuusage'] . " %", 0, 'L');
-    $pdf->MultiCell(0, 6, "메모리 사용량: " . $row['sc_memusage'] . " %", 0, 'L');
-    $pdf->Ln(5);
-
-    // 웹 서버 정보 (기동 중인 경우만)
-    if (!empty($row['sc_apache'])) {
-        $pdf->SetFont('NanumGothic', 'B', 12);
-        $pdf->Cell(0, 10, "Apache 웹 서버", 0, 1, 'L');
-        $pdf->SetFont('NanumGothic', '', 10);
-        $pdf->MultiCell(0, 6, "Apache 버전: " . $row['sc_apache'], 0, 'L');
-        $pdf->Ln(5);
-    }
-
-    // WAS (Tomcat) 정보 (기동 중인 경우만)
-    if (!empty($row['sc_tomcat'])) {
-        $pdf->SetFont('NanumGothic', 'B', 12);
-        $pdf->Cell(0, 10, "Tomcat WAS 서버", 0, 1, 'L');
-        $pdf->SetFont('NanumGothic', '', 10);
-        $pdf->MultiCell(0, 6, "Tomcat 정보:", 0, 'L');
-        $tomcats = json_decode($row['sc_tomcat'], true);
-        foreach ($tomcats as $tomcat) {
-            $pdf->MultiCell(0, 6, "버전: {$tomcat['sc_tomVer']}, AJP 포트: {$tomcat['sc_tomAjpPort']}, HTTP 포트: {$tomcat['sc_tomHttpPort']}", 0, 'L');
-        }
-        $pdf->Ln(5);
-    }
-
-    // DB 정보 (기동 중인 경우만)
-    if (!empty($row['sc_db'])) {
-        $pdf->SetFont('NanumGothic', 'B', 12);
-        $pdf->Cell(0, 10, "데이터베이스 (DB) 서버", 0, 1, 'L');
-        $pdf->SetFont('NanumGothic', '', 10);
-        $pdf->MultiCell(0, 6, "DB 정보:", 0, 'L');
-        $databases = json_decode($row['sc_db'], true);
-        foreach ($databases as $db) {
-            $pdf->MultiCell(0, 6, "버전: {$db['sc_dbVer']}, 인스턴스 타입: {$db['sc_dbInstType']}, 데이터 경로: {$db['sc_dbData']}", 0, 'L');
-        }
-        $pdf->Ln(5);
-    }
-
-    $pdf->SetFont('NanumGothic', 'B', 12);
-    $pdf->Cell(0, 10, "로그 및 보안", 0, 1, 'L');
-    $pdf->SetFont('NanumGothic', '', 10);
-
-    $pdf->MultiCell(0, 6, "시스템 로그 (messages): " . implode("\n", json_decode($row['sc_meslog'], true)), 0, 'L');
-    $pdf->Ln(5);
-    $pdf->MultiCell(0, 6, "보안 로그 (secure): " . implode("\n", json_decode($row['sc_seclog'], true)), 0, 'L');
-    $pdf->Ln(5);
-    $pdf->MultiCell(0, 6, "dmesg 로그: " . implode("\n", json_decode($row['sc_dmeslog'], true)), 0, 'L');
-    $pdf->Ln(10);
+function printTitle($pdf, $text) {
+	$pdf->SetFont('NanumGothic','B',12);
+	$pdf->Cell(0,8,$text,0,1);
 }
 
+function printContent($pdf, $text) {
+	$pdf->SetFont('NanumGothic','',10);
+	$pdf->Cell(0,8,$text,0,1);
+	$pdf->Ln(2);
+}
+
+function printContent2($pdf, $text) {
+	$pdf->SetFont('NanumGothic','',10);
+	$pdf->Cell(0,8,$text,0,1);
+}
+
+foreach ($reports as $index => $rep) {
+    $number = $index + 1;
+    $pdf->AddPage();
+    
+    $pdf->SetFont('NanumGothic','B',14);
+    $pdf->Cell(0,10, $number . ". " . $rep['sc_hostname'] . " 서버 점검",0,1);
+    $pdf->Ln(5);
+
+    // 현재 좌표 저장
+    // 행 1: OS
+    printTitle($pdf, 'OS');
+    printContent($pdf, $rep['sc_os']);
+
+    // 행 2: Hostname
+    printTitle($pdf, 'Kernel');
+    printContent($pdf, $rep['sc_kernel']);
+
+    // 행 3: CPU
+    printTitle($pdf, 'CPU');
+    printContent($pdf, $rep['sc_cpuinfo']);
+
+    // 행 4: Memory
+    printTitle($pdf, 'MEMORY');
+    printContent($pdf, $rep['sc_memdiv'] . "GB");
+
+    // 행 5: Network
+    printTitle($pdf, 'Network');
+    $sc_srvip = json_decode($rep['sc_srvip'], true);
+    foreach ($sc_srvip as $ip) {
+        printContent2($pdf, " Interface: " .  $ip['sc_srvipId'] . " / IP: " . $ip['sc_srvip']);
+    }
+    $pdf->Ln(2);
+
+    // 행 6: Hostname
+    printTitle($pdf, 'Hostname');
+    printContent($pdf, $rep['sc_hostname']);
+
+    $pdf->AddPage();
+
+    // 행 1: Uptime
+    printTitle($pdf, 'Uptime');
+    printContent($pdf, $rep['sc_uptime']);
+
+    // 행 2: LoadAverage
+    printTitle($pdf, 'Load Average (15min)');
+    printContent($pdf, $rep['sc_avg']);
+
+    // 행 3: Process Count
+    printTitle($pdf, 'Process Count');
+    printContent($pdf, $rep['sc_pscnt']);
+
+    // 행 3: Cpu Usage
+    printTitle($pdf, 'Cpu Usage');
+    printContent($pdf, $rep['sc_cpuusage'] . "%");
+
+}
+
+// "기술지원 및 특이사항" 영역 – GET 파라미터 comments
+$number = $number + 1;
+$pdf->SetFont('NanumGothic','B',14);
+$pdf->Cell(0,10,$number . ". 기술지원 및 특이사항",0,1);
+$pdf->SetFont('NanumGothic','',12);
+$pdf->MultiCell(0,10, $comments, 1, 'L');
+$pdf->Ln(5);
 $pdf->AddPage();
 
 // 파일명 생성: {Client}_{Server_Name}_{생성년-월-일}.pdf
 $clientName = preg_replace("/\s+/", "_", $client);
 $fileName = "{$clientName}_{$reportDate}.pdf";
 $filePath = "/data/report/uzart/www/tmp/" . "{$clientName}_{$reportDate}.pdf";
-
+    
 if ($_GET['download'] == '1') {
     header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename=' . iconv('UTF-8', 'CP949//IGNORE', $fileName));
-    //header("Content-Disposition: attachment; filename=\"$fileName\"");
+    header("Content-Disposition: attachment; filename=\"$fileName\"");
     $pdf->Output("D", $fileName);
     log_message("INFO", "$userId is download $fileName", "$client", "", $remote_ip, $conn); // 로깅
 } elseif ($_GET['download'] == '2') {
     $pdf->Output($filePath, "F");
     header('Content-Type: application/pdf');
-    header('Content-Disposition: inline; filename=' . iconv('UTF-8', 'CP949//IGNORE', $fileName));
-    //header("Content-Disposition: inline; filename=\"" . basename($filePath) . "\"");
+    header("Content-Disposition: inline; filename=\"" . basename($filePath) . "\"");
     header("Content-Length: " . filesize($filePath));
     readfile($filePath);
     log_message("INFO", "$userId is view $fileName", "$client", "", $remote_ip, $conn); // 로깅

@@ -1,4 +1,5 @@
 <?php
+//header("Content-Type: application/json");
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -33,19 +34,6 @@ if (empty($idArr)) {
     exit();
 }
 
-// 점검 여부 조회
-$checkStmt = $conn->prepare("SELECT id, check_status FROM uz_srvdata_check WHERE id IN (" . implode(',', array_fill(0, count($idArr), '?')) . ")");
-$checkStmt->execute($idArr);
-$checkStatuses = $checkStmt->fetchAll(PDO::FETCH_KEY_PAIR);
-//error_log("Check statuses: " . print_r($checkStatuses, true));
-
-foreach ($idArr as $id) {
-    if (!isset($checkStatuses[$id]) || $checkStatuses[$id] !== true) {
-        echo json_encode(['success' => false, 'message' => "ID $id 보고서는 점검필요 상태로 조회할 수 없습니다."]);
-        exit();
-    }
-}
-
 // 데이터 조회: 선택한 ID들에 대해
 $placeholders = implode(',', array_fill(0, count($idArr), '?'));
 $stmt = $conn->prepare("SELECT * FROM uz_srvdata WHERE id IN ($placeholders)");
@@ -56,7 +44,7 @@ if (!$reports || count($reports) === 0) {
     exit();
 }
 $client = $reports[0]['client'];
-
+//$server = $reports[0]['server_name'];
 
 // 사용자 정보
 $userId = $_SESSION['user_id'];
@@ -65,7 +53,7 @@ $stmt->bindParam(":id", $reports[0]['id']);
 $stmt->execute();
 $users = $stmt->fetch(PDO::FETCH_ASSOC);
 $userId    = $_SESSION['username'] ?? "admin";
-//$userId    = $users['username']       ?? "admin";
+//$userId    = $users['username']	?? "admin";
 $userName  = $users['name']         ?? "관리자";
 $userRole  = $users['position']     ?? "관리자";
 $userOffice = $users['office_phone'] ?? "0000";
@@ -142,7 +130,7 @@ $dataWidth = 120; // 결과 열 폭 (점검 결과)
 foreach ($reports as $index => $rep) {
     $number = $index + 1;
     $pdf->AddPage();
-
+    
     $pdf->SetFont('NanumGothic','B',14);
     $pdf->Cell(0,10, $number . ". " . $rep['sc_hostname'] . " 서버 점검내역",0,1);
     $pdf->Ln(5);
@@ -198,23 +186,23 @@ foreach ($reports as $index => $rep) {
         $lines = explode("\n", $diskText);
         $nbLines = count($lines);
         $rowHeight = 8 * $nbLines;  // 해당 셀의 높이
-
+    
         // 현재 좌표 저장
         $x = $pdf->GetX();
         $y = $pdf->GetY();
-
-        // 첫 번째 셀: "Disk" 카테고리 (고정 폭, 계산된 높이 사용)
-        $pdf->SetFont('NanumGothic','',10);
+    
+	// 첫 번째 셀: "Disk" 카테고리 (고정 폭, 계산된 높이 사용)
+	$pdf->SetFont('NanumGothic','',10);
         $pdf->Cell($categoryWidth, $rowHeight, "Disk", 1);
 
         // 두번째 번째 셀: "사용량" 라벨 (고정 폭, 계산된 높이 사용)
         $pdf->Cell($labelWidth, $rowHeight, "사용량", 1);
-
+    
         // 마지막 셀: MultiCell로 디스크 정보를 출력 (자동 줄바꿈)
-        $pdf->SetFont('NanumGothic','',8);
+	$pdf->SetFont('NanumGothic','',8);
         $pdf->SetXY($x + $categoryWidth + $labelWidth, $y);  // X좌표를 라벨 다음으로 이동
         $pdf->MultiCell($dataWidth, 8, $diskText, 1,1);
-
+    
         // MultiCell은 자동으로 줄바꿈하여 Y가 변경되었으므로, 다시 시작 Y로 설정
         $pdf->SetXY($x + $categoryWidth + $labelWidth + $dataWidth, $y);
     }
@@ -257,24 +245,19 @@ $pdf->Ln(5);
 $clientName = preg_replace("/\s+/", "_", $client);
 $fileName = "{$clientName}_{$reportDate}.pdf";
 $filePath = "/data/report/uzart/www/tmp/" . "{$clientName}_{$reportDate}.pdf";
-
-// 디버깅 로그
-error_log("Raw client: " . bin2hex($client));
-error_log("Converted clientName: " . $clientName);
-error_log("fileName: " . $fileName);
-
+    
 if ($_GET['download'] == '1') {
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");
     $pdf->Output("D", $fileName);
-    log_message("INFO", "$userId is download $fileName", "$client", "", $remote_ip, $conn);
+    log_message("INFO", "$userId is download $fileName", "$client", "", $remote_ip, $conn); // 로깅
 } elseif ($_GET['download'] == '2') {
     $pdf->Output($filePath, "F");
     header('Content-Type: application/pdf');
-    header("Content-Disposition: attachment; filename=\"$fileName\"");
+    header("Content-Disposition: inline; filename=\"" . basename($filePath) . "\"");
     header("Content-Length: " . filesize($filePath));
     readfile($filePath);
-    log_message("INFO", "$userId is view $fileName", "$client", "", $remote_ip, $conn);
+    log_message("INFO", "$userId is view $fileName", "$client", "", $remote_ip, $conn); // 로깅
 } elseif ($_GET['download'] == '3') {
     if (file_exists($filePath)) {
         unlink($filePath); // 파일 삭제
@@ -283,5 +266,5 @@ if ($_GET['download'] == '1') {
         die(json_encode(["error" => "파일이 존재하지 않습니다."]));
     }
 }
-?>
 
+?>

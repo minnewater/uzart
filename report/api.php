@@ -142,6 +142,26 @@ if ($request_method === 'POST') {
 
     // 쿼리 실행
     if ($inst_stmt->execute()) {
+	// 마지막 insert id 가져오기
+	$last_insert_id = $conn->lastInsertId();
+
+	// uz_srvdata_check 테이블에 upsert 실행
+	$check_stmt = $conn->prepare("
+	INSERT INTO uz_srvdata_check (id, check_status, net_err, tmp_log, web_log, was_log, db_log, sys_log, comments, user_id)
+	VALUES (:id, 'f', '점검필요', '점검필요', '점검필요', '점검필요', '점검필요', '점검필요', '점검필요', '1')
+	ON CONFLICT (id) DO UPDATE SET
+	check_status = EXCLUDED.check_status,
+	net_err = EXCLUDED.net_err,
+	tmp_log = EXCLUDED.tmp_log,
+	web_log = EXCLUDED.web_log,
+	was_log = EXCLUDED.was_log,
+	db_log = EXCLUDED.db_log,
+	sys_log = EXCLUDED.sys_log,
+	comments = EXCLUDED.comments
+	");
+	$check_stmt->bindValue(":id", $last_insert_id, PDO::PARAM_INT);
+	$check_stmt->execute();
+
         http_response_code(201); // HTTP 201: Created
         log_message("INFO", "Data saved successfully: $client / $hostname", $client, $hostname, $client_ip, $conn);
         //echo json_encode(["message" => "Data inserted successfully"]);

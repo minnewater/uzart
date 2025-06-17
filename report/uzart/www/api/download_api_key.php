@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ── DB 연결  ───────────────────────── */
 $conn   = get_db_connection();
-$action = $_GET['action'] ?? '';
 
 $client = $_GET['client'] ?? '';
 $server = $_GET['server'] ?? '';

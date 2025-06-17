@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ── DB 연결  ───────────────────────── */
 $conn   = get_db_connection();
-$action = $_GET['action'] ?? '';
 
 $remote_ip = $_SERVER['REMOTE_ADDR'];
 $action    = $_GET['action'] ?? '';

@@ -8,16 +8,20 @@ if (!isset($_SESSION['user_id'])) {
 
 include_once(__DIR__ . "/../../include/_common.php");
 
-// CSRF 토큰 검증
-$csrf_token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-if ($csrf_token !== $_SESSION['csrf_token']) {
-    echo json_encode(["error" => "Invalid CSRF token"]);
-    exit();
+/* ── CSRF (POST 전용) ──────────────── */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? '');
+    if (!verify_csrf_token($csrf)) {
+        http_response_code(403);
+        echo json_encode(["success" => false, "error" => "Invalid CSRF token"]);
+        exit();
+    }
 }
 
+/* ── DB 연결  ───────────────────────── */
+
 try {
-    $conn = new PDO("pgsql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn   = get_db_connection();
 
     $stmt = $conn->prepare("SELECT id, username, email FROM users WHERE client = :client LIMIT :limit");
     $stmt->bindParam(":client", $_GET['client'], PDO::PARAM_STR);

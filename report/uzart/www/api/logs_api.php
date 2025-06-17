@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ── DB 연결  ───────────────────────── */
 $conn   = get_db_connection();
-$action = $_GET['action'] ?? '';
 
 // 기본값 설정 ( 오늘 날짜)
 $today = date('Y-m-d');

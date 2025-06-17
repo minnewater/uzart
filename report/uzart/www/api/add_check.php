@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ── DB 연결  ───────────────────────── */
 $conn   = get_db_connection();
-$action = $_GET['action'] ?? '';
 
 $ids          = $_POST['ids']          ?? '';
 $check_status = $_POST['check_status'] ?? 'true';

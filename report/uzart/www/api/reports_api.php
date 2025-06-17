@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ── DB 연결  ───────────────────────── */
 $conn   = get_db_connection();
-$action = $_GET['action'] ?? '';
 
 $action = $_GET['action'] ?? '';
 $today = date('Y-m-d');

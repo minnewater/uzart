@@ -13,6 +13,16 @@ include_once(__DIR__ . "/../../include/_common.php");
 require "../../lib/tfpdf.php";
 $remote_ip = $_SERVER['REMOTE_ADDR']; // 접속 IP
 
+/* ── CSRF (POST 전용) ──────────────── */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? '');
+    if (!verify_csrf_token($csrf)) {
+        http_response_code(403);
+        echo json_encode(["success" => false, "error" => "Invalid CSRF token"]);
+        exit();
+    }
+}
+
 // 글로벌 설정 파일
 $configFile = $_SERVER['DOCUMENT_ROOT'] . '/uzart/config/uzart.conf';
 $conf = file_exists($configFile) ? parse_ini_file($configFile) : [];

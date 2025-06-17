@@ -1,19 +1,38 @@
 <?php
-header("Content-Type: application/json");
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+/**
+ * settings_api.php
+ * 2025-06-16  —  DB 헬퍼(get_db_connection) + CSRF + “role 컬럼 자동감지” 버전
+ *
+ * 1) 공통 _common.php 로드 → PDO 헬퍼·CSRF 헬퍼·세션 시작 포함
+ * 2) 모든 POST 계열 요청에 CSRF 검증
+ */
+
+header("Content-Type: application/json;charset=UTF-8");
+session_status() === PHP_SESSION_NONE && session_start();
+
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['dashboardid'])) {
     header("Location: /uzart");
     exit();
 }
 
 include_once(__DIR__ . "/../../include/_common.php");
-$conn = new PDO("pgsql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
-$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+/* ── CSRF (POST 전용) ──────────────── */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? '');
+    if (!verify_csrf_token($csrf)) {
+        http_response_code(403);
+        echo json_encode(["success" => false, "error" => "Invalid CSRF token"]);
+        exit();
+    }
+}
+
+/* ── DB 연결  ───────────────────────── */
+$conn   = get_db_connection();
+$action = $_GET['action'] ?? '';
 
 $remote_ip = $_SERVER['REMOTE_ADDR'];
-$action = $_GET['action'] ?? '';
+$action    = $_GET['action'] ?? '';
 
 if ($action === 'load_users') {
     // 사용자 조회 (user_group과 groups 조인)

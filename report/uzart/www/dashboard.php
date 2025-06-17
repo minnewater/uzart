@@ -20,7 +20,12 @@ include_once __DIR__ . "/../include/_common.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대시보드 - Uzart</title>
+    <?php if (function_exists('csrf_field')): ?>
+        <meta name="csrf-token"
+              content="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+    <?php endif; ?>
     <link rel="stylesheet" href="/uzart/www/css/style.css">
+    <script src="/uzart/www/js/csrf.js" defer></script>
     <script>
         var csrfToken = "<?php echo $_SESSION['csrf_token']; ?>";
         document.cookie = "csrf_token=" + csrfToken;

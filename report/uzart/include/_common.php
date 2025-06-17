@@ -23,11 +23,37 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+    // ──── CSRF 토큰 헬퍼 ─────────────────────────
+    // 세션당 토큰 생성
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    /**
+     * 요청에서 전달된 토큰을 검증
+     * @param string|null $token
+     * @return bool
+     */
+    function verify_csrf_token(?string $token): bool {
+        if (!isset($_SESSION['csrf_token'])) {
+            return false;
+        }
+        return hash_equals($_SESSION['csrf_token'], $token ?? '');
+    }
+
+    /**
+     * <form> 안에 삽입용 hidden 필드
+     * @return string
+     */
+    function csrf_field(): string {
+        return '<input type="hidden" name="csrf_token" value="' .
+               htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, "UTF-8") .
+               '">';
+    }
+    // ────────────────────────────────────────────
+
 /**
  * 입력값을 sanitize하는 함수
- *
- * @param mixed $data
- * @return mixed
  */
 function sanitize($data) {
     if (is_array($data)) {
@@ -38,25 +64,17 @@ function sanitize($data) {
 }
 
 /**
- * JSON 디코딩 후 오류 체크 함수
- *
- * @param string $json
- * @return mixed|null
+ * JSON 디코딩 후 오류 체크
  */
 function safe_json_decode($json) {
     $result = json_decode($json, true);
-    if (json_last_error() === JSON_ERROR_NONE) {
-        return $result;
-    }
-    return null;
+    return (json_last_error() === JSON_ERROR_NONE) ? $result : null;
 }
 
 /**
- * 데이터베이스 연결을 위한 함수
- * (config.inc.php에서 실제 연결 객체($conn)를 생성하므로, 여기서는 추가 공통 함수가 필요한 경우 추가)
+ * DB 핸들러 반환
  */
 function get_db_connection() {
-    // 이미 config.inc.php에서 PDO 연결 객체 $conn이 생성되어 있다면, 그대로 사용
     global $conn;
     return $conn;
 }

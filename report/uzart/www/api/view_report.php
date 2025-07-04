@@ -40,8 +40,14 @@ $checkStatuses = $checkStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 //error_log("Check statuses: " . print_r($checkStatuses, true));
 
 foreach ($idArr as $id) {
-    if (!isset($checkStatuses[$id]) || $checkStatuses[$id] !== true) {
-        echo json_encode(['success' => false, 'message' => "ID $id 보고서는 점검필요 상태로 조회할 수 없습니다."]);
+    // PostgreSQL boolean은 't' 또는 'f' 문자열로 반환될 수 있으므로
+    $status = $checkStatuses[$id] ?? null;
+    $statusBool = filter_var($status, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    if ($statusBool !== true) {
+        echo json_encode([
+            'success' => false,
+            'message' => "ID $id 보고서는 점검필요 상태로 조회할 수 없습니다."
+        ]);
         exit();
     }
 }

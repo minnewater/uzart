@@ -1,4 +1,4 @@
-<?
+<?php
 
 //// 디버깅 로그 파일
 //file_put_contents('/tmp/debug.log', json_encode([
@@ -78,13 +78,14 @@ if ($request_method === 'POST') {
 
     // 입력 데이터 읽기
     $input = file_get_contents("php://input");
-    $data = json_decode($input,true);
+    $data = json_decode($input, true);
 
-    // JSON 형식 확인
-    if (json_last_error() !== JSON_ERROR_NONE) {
-	log_message("ERROR", "Invalid JSON data", $client, $hostname, $client_ip, $conn);
-	exit;
-    }	
+    // JSON 형식 확인 및 필수 데이터 존재 여부 확인
+    if (json_last_error() !== JSON_ERROR_NONE || $data === null) {
+        http_response_code(400);
+        error_log("Invalid JSON data");
+        exit;
+    }
 
     // Client IP & Hostname
     $client_ip = $_SERVER['REMOTE_ADDR']; // 요청한 서버의 IP 주소
@@ -97,15 +98,17 @@ if ($request_method === 'POST') {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         http_response_code(500);
-	log_message("ERROR", "Database connectino failed", $client, $hostname, $client_ip, $conn);
+        error_log("Database connection failed: " . $e->getMessage());
         exit;
     }
 
     // API 요청 처리
-    $api_key = str_replace("Bearer ", "", $_SERVER['AUTH_HEADER']);
+    $headers = getallheaders();
+    $auth_header = $headers['Authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['AUTH_HEADER'] ?? ''));
+    $api_key = str_replace('Bearer ', '', $auth_header);
     if (!$api_key) {
         http_response_code(401);
-        log_message("ERROR", "Missing or invalid API Key in Authorization header API : $api_key", $client, $hostname, $client_ip, $conn);
+        log_message("ERROR", "Missing or invalid API Key in Authorization header", 'unknown', $hostname, $client_ip, $conn);
         exit;
     }
 
@@ -114,31 +117,35 @@ if ($request_method === 'POST') {
     $chkAPI_stmt->bindParam(':api_key', $api_key);
     $chkAPI_stmt->execute();
     $result = $chkAPI_stmt->fetch(PDO::FETCH_ASSOC);
-    $server_name = $result['server_name'];
-    $client = $result['client'];
 
     if (!$result) {
         http_response_code(401);
-        log_message("ERROR", "Invalid API Key: $api_key", $client, $hostname, $client_ip, $conn);
+        log_message("ERROR", "Invalid API Key: $api_key", 'unknown', $hostname, $client_ip, $conn);
         exit;
     }
+
+    $server_name = $result['server_name'];
+    $client = $result['client'];
 
     // JSON 데이터에서 컬럼과 값을 동적으로 생성
     $columns = implode(", ", array_keys($data));
     $placeholders = ":" . implode(", :", array_keys($data));
 
-    $inst_stmt = $conn->prepare("INSERT INTO uz_srvdata (client, server_name, $columns) VALUES ('$client', '$server_name', $placeholders)");
+    $inst_stmt = $conn->prepare("INSERT INTO uz_srvdata (client, server_name, $columns) VALUES (:client, :server_name, $placeholders)");
 
     // 데이터 바인딩
     foreach ($data as $key => $value) {
-	if (is_numeric($value)) {
+        if (is_numeric($value)) {
           $value = is_float($value + 0) ? (float)$value : (int)$value;
-	}
-	if (is_array($value) || is_object($value)) {
+        }
+        if (is_array($value) || is_object($value)) {
           $value = json_encode($value);
-	}
+        }
         $inst_stmt->bindValue(":$key", $value);
     }
+
+    $inst_stmt->bindValue(':client', $client);
+    $inst_stmt->bindValue(':server_name', $server_name);
 
     // 쿼리 실행
     if ($inst_stmt->execute()) {

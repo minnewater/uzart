@@ -259,13 +259,13 @@ $fileName = "{$clientName}_{$reportDate}.pdf";
 
 // PDF 저장 디렉터리 (없으면 생성)
 $outputDir = realpath(__DIR__ . '/../tmp');
-if ($outputDir === false || !is_writable($outputDir)) {
-    $outputDir = '/data/report/uzart/www/tmp';
+if ($outputDir === false) {
+    $outputDir = __DIR__ . '/../tmp';
 }
 if (!is_dir($outputDir)) {
     mkdir($outputDir, 0777, true);
 }
-$filePath = rtrim($outputDir, '/'). '/' . $fileName;
+$filePath = $outputDir . '/' . $fileName;
 
 // 디버깅 로그
 error_log("Raw client: " . bin2hex($client));
@@ -279,7 +279,7 @@ if ($_GET['download'] == '1') {
     log_message("INFO", "$userId is download $fileName", "$client", "", $remote_ip, $conn);
     exit();
 } elseif ($_GET['download'] == '2') {
-    $pdf->Output($filePath, 'F');
+    $pdf->Output('F', $filePath);
     if (!file_exists($filePath)) {
         header('HTTP/1.1 500 Internal Server Error');
         echo json_encode(['success' => false, 'message' => 'PDF 생성 실패']);

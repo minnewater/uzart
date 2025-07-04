@@ -34,6 +34,17 @@
    java -jar target/uzart-0.0.1-SNAPSHOT.jar
    ```
 
+## Admin 계정 생성
+웹 루트에서 실행되던 `Admin.php` 스크립트는 삭제되었습니다.
+초기 관리자 계정을 만들려면 CLI에서 제공하는 `create_admin.php`를 실행합니다.
+
+```sh
+cd report/uzart/scripts
+php create_admin.php <username> <password>
+```
+
+실행 후 출력되는 ID를 확인한 뒤 스크립트를 보관 또는 삭제하면 됩니다.
+
 ---
 
 ## 사용법

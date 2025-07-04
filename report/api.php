@@ -114,14 +114,15 @@ if ($request_method === 'POST') {
     $chkAPI_stmt->bindParam(':api_key', $api_key);
     $chkAPI_stmt->execute();
     $result = $chkAPI_stmt->fetch(PDO::FETCH_ASSOC);
-    $server_name = $result['server_name'];
-    $client = $result['client'];
 
     if (!$result) {
         http_response_code(401);
-        log_message("ERROR", "Invalid API Key: $api_key", $client, $hostname, $client_ip, $conn);
+        log_message("ERROR", "Invalid API Key: $api_key", 'unknown', $hostname, $client_ip, $conn);
         exit;
     }
+
+    $server_name = $result['server_name'];
+    $client = $result['client'];
 
     // JSON 데이터에서 컬럼과 값을 동적으로 생성
     $columns = implode(", ", array_keys($data));

@@ -36,19 +36,24 @@ git clone https://github.com/minnewater/uzart.git
 cd uzart
 
 2. 환경 변수 설정
-.env.example 파일을 복사하여 .env로 생성한 후, PostgreSQL 접속 정보를 설정하세요:
+.env.example 파일을 복사하여 .env로 생성한 후, PostgreSQL 접속 정보를 설정하세요.
+```bash
 cp .env.example .env
 # .env 파일을 열어 DB 호스트, 이름, 사용자, 비밀번호 수정
+```
 
 3. JAVA 서버 실행
+```bash
 cd java
 mvn spring-boot:run
+```
 기본적으로 포트 8080에서 서버가 실행되며, /api POST 엔드포인트가 제공됩니다.
 
 4. PHP Report Interface
 report/ 디렉터리에는 기존 PHP 애플리케이션이 있습니다. PHP 8을 지원하는 웹 서버를 통해 report/uzart를 문서 루트로 설정하면 사용할 수 있습니다.
 
 5. Admin 계정 생성
+```bash
 cd report/uzart/scripts
 php create_admin.php <username> <password>
 스크립트 실행 후 출력된 ID 값을 확인합니다.

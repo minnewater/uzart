@@ -53,7 +53,7 @@ mvn spring-boot:run
 ### 4. PHP Report Interface
 report/ 디렉터리에는 기존 PHP 애플리케이션이 있습니다. PHP 8을 지원하는 웹 서버를 통해 report/uzart를 문서 루트로 설정하면 사용할 수 있습니다.
 
-5. Admin 계정 생성
+### 5. Admin 계정 생성
 ```bash
 cd report/uzart/scripts
 php create_admin.php <username> <password>

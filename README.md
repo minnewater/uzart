@@ -4,7 +4,7 @@
 이 저장소는 Java 기반의 Spring Boot 백엔드와 레거시 PHP 인터페이스로 구성되어 있습니다.
 
 ## 📁 프로젝트 구조
-
+```
 uzart/
 ├── java/ # Spring Boot 서비스
 │ ├── src/main/java/com/example/uzart
@@ -23,7 +23,7 @@ uzart/
 │ ├── www/ # 로그인 폼, 대시보드
 │ └── scripts/ # create_admin.php 등 CLI 유틸
 └── .env.example # 데이터베이스 설정 템플릿
-
+```
 
 ---
 

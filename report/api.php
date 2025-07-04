@@ -97,7 +97,7 @@ if ($request_method === 'POST') {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         http_response_code(500);
-	log_message("ERROR", "Database connectino failed", $client, $hostname, $client_ip, $conn);
+        log_message("ERROR", "Database connection failed", $client, $hostname, $client_ip, $conn);
         exit;
     }
 

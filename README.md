@@ -25,6 +25,14 @@
    git clone https://github.com/minnewater/uzart.git
    ```
 2. (추가 설치 방법 및 환경 설정은 추후 업데이트 예정)
+3. Java 서버 빌드 및 실행
+   ```sh
+   cd java
+   mvn spring-boot:run
+   # 또는
+   mvn package
+   java -jar target/uzart-0.0.1-SNAPSHOT.jar
+   ```
 
 ---
 

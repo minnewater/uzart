@@ -24,7 +24,12 @@
    ```sh
    git clone https://github.com/minnewater/uzart.git
    ```
-2. (추가 설치 방법 및 환경 설정은 추후 업데이트 예정)
+2. 환경 변수 설정
+   `.env.example` 파일을 복사하여 `.env`로 만든 뒤 DB 접속 정보를 입력합니다.
+   ```sh
+   cp .env.example .env
+   # 에디터로 .env 파일을 열어 UZART_DB_* 값을 수정
+   ```
 3. Java 서버 빌드 및 실행
    ```sh
    cd java

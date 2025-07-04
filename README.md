@@ -34,6 +34,7 @@ uzart/
 ```bash
 git clone https://github.com/minnewater/uzart.git
 cd uzart
+```
 
 2. 환경 변수 설정
 .env.example 파일을 복사하여 .env로 생성한 후, PostgreSQL 접속 정보를 설정하세요.

@@ -1,3 +1,3 @@
-<?
-$config_file = __DIR__ . "/uzart/include/_common.php";
-?>
+<?php
+$config_file = __DIR__ . '/uzart/include/_common.php';
+

@@ -256,7 +256,16 @@ $pdf->Ln(5);
 // 파일명 생성: {Client}_{Server_Name}_{생성년-월-일}.pdf
 $clientName = preg_replace("/\s+/", "_", $client);
 $fileName = "{$clientName}_{$reportDate}.pdf";
-$filePath = "/data/report/uzart/www/tmp/" . "{$clientName}_{$reportDate}.pdf";
+
+// PDF 저장 디렉터리 (없으면 생성)
+$outputDir = realpath(__DIR__ . '/../tmp');
+if ($outputDir === false) {
+    $outputDir = __DIR__ . '/../tmp';
+}
+if (!is_dir($outputDir)) {
+    mkdir($outputDir, 0777, true);
+}
+$filePath = $outputDir . '/' . $fileName;
 
 // 디버깅 로그
 error_log("Raw client: " . bin2hex($client));
@@ -268,13 +277,20 @@ if ($_GET['download'] == '1') {
     header("Content-Disposition: attachment; filename=\"$fileName\"");
     $pdf->Output("D", $fileName);
     log_message("INFO", "$userId is download $fileName", "$client", "", $remote_ip, $conn);
+    exit();
 } elseif ($_GET['download'] == '2') {
-    $pdf->Output($filePath, "F");
+    $pdf->Output('F', $filePath);
+    if (!file_exists($filePath)) {
+        header('HTTP/1.1 500 Internal Server Error');
+        echo json_encode(['success' => false, 'message' => 'PDF 생성 실패']);
+        exit();
+    }
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");
     header("Content-Length: " . filesize($filePath));
     readfile($filePath);
     log_message("INFO", "$userId is view $fileName", "$client", "", $remote_ip, $conn);
+    exit();
 } elseif ($_GET['download'] == '3') {
     if (file_exists($filePath)) {
         unlink($filePath); // 파일 삭제
@@ -283,5 +299,4 @@ if ($_GET['download'] == '1') {
         die(json_encode(["error" => "파일이 존재하지 않습니다."]));
     }
 }
-?>
 

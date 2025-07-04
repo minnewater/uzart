@@ -127,14 +127,35 @@ if ($request_method === 'POST') {
     $server_name = $result['server_name'];
     $client = $result['client'];
 
-    // JSON 데이터에서 컬럼과 값을 동적으로 생성
-    $columns = implode(", ", array_keys($data));
-    $placeholders = ":" . implode(", :", array_keys($data));
+    // 허용된 컬럼 화이트리스트
+    $allowed_columns = [
+        'sc_avg','sc_memUsage','sc_raid','sc_meslog','sc_dmeslog','sc_seclog',
+        'sc_devs','sc_last','sc_tmps','sc_vtmps','sc_disk','sc_srvip','sc_net',
+        'sc_user','sc_apache','sc_tomcat','sc_db','sc_timevers','sc_uptime',
+        'sc_cpucores','sc_cpuinfo','sc_cpunum','sc_hostname','sc_idcheck',
+        'sc_ipmichk','sc_kernel','sc_memdiv','sc_memnum','sc_memFree',
+        'sc_memTotal','sc_memUsed','sc_swapFree','sc_swapTotal','sc_swapUsage',
+        'sc_swapUsed','sc_vmcpu','sc_os','sc_pscnt','sc_time','sc_timeconf',
+        'sc_timeexe','sc_timepool'
+    ];
+
+    $unexpected = array_diff(array_keys($data), $allowed_columns);
+    if (!empty($unexpected)) {
+        http_response_code(400);
+        log_message("ERROR", "Unexpected columns: " . implode(', ', $unexpected), $client, $hostname, $client_ip, $conn);
+        exit;
+    }
+
+    $filtered_data = array_intersect_key($data, array_flip($allowed_columns));
+
+    // JSON 데이터에서 허용된 컬럼과 값을 동적으로 생성
+    $columns = implode(", ", array_keys($filtered_data));
+    $placeholders = ":" . implode(", :", array_keys($filtered_data));
 
     $inst_stmt = $conn->prepare("INSERT INTO uz_srvdata (client, server_name, $columns) VALUES (:client, :server_name, $placeholders)");
 
     // 데이터 바인딩
-    foreach ($data as $key => $value) {
+    foreach ($filtered_data as $key => $value) {
         if (is_numeric($value)) {
           $value = is_float($value + 0) ? (float)$value : (int)$value;
         }

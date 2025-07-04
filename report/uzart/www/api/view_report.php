@@ -106,8 +106,8 @@ $pdf->SetAutoPageBreak(true, 10);
 $pdf->AddPage();
 
 // 폰트 설정 (NanumGothic 폰트를 사전에 등록해두었음)
-$pdf->AddFont('NanumGothic','', 'unifont/Nanum/NanumGothic.ttf', true);
-$pdf->AddFont('NanumGothic','B', 'unifont/Nanum/NanumGothicBold.ttf', true);
+$pdf->AddFont('NanumGothic','', 'Nanum/NanumGothic.ttf', true);
+$pdf->AddFont('NanumGothic','B', 'Nanum/NanumGothicBold.ttf', true);
 
 // 표지 페이지
 $pdf->Image($logoPath, $pdf->GetPageWidth() - 40, 30, 30);

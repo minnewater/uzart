@@ -97,8 +97,8 @@ $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 10);
 
 // 폰트 설정 (NanumGothic 폰트를 사전에 등록해두었음)
-$pdf->AddFont('NanumGothic','', 'unifont/Nanum/NanumGothic.ttf', true);
-$pdf->AddFont('NanumGothic','B', 'unifont/Nanum/NanumGothicBold.ttf', true);
+$pdf->AddFont('NanumGothic','', 'Nanum/NanumGothic.ttf', true);
+$pdf->AddFont('NanumGothic','B', 'Nanum/NanumGothicBold.ttf', true);
 
 //$pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Linux Server Audit');

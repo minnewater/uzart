@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// Buffer all output to prevent accidental whitespace from corrupting PDFs
+ob_start();
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['dashboardid'])) {
     header("Location: /uzart");
     exit();

@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// Buffer all output to prevent accidental whitespace from corrupting PDFs
+ob_start();
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['dashboardid'])) {
     header("Location: /uzart");
     exit();
@@ -280,7 +282,7 @@ error_log("fileName: " . $fileName);
 
 if ($_GET['download'] == '1') {
     if (ob_get_length()) {
-        ob_clean();
+        ob_end_clean();
     }
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");
@@ -295,7 +297,7 @@ if ($_GET['download'] == '1') {
         exit();
     }
     if (ob_get_length()) {
-        ob_clean();
+        ob_end_clean();
     }
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");

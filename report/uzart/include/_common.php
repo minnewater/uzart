@@ -132,4 +132,3 @@ function log_message($level, $message, $client_name, $hn, $ip, $conn) {
     $inst_log_stmt->bindValue(':client_ip', $ip, PDO::PARAM_STR);
     $inst_log_stmt->execute();
 }
-?>

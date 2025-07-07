@@ -279,6 +279,9 @@ error_log("Converted clientName: " . $clientName);
 error_log("fileName: " . $fileName);
 
 if ($_GET['download'] == '1') {
+    if (ob_get_length()) {
+        ob_clean();
+    }
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");
     $pdf->Output("D", $fileName);
@@ -290,6 +293,9 @@ if ($_GET['download'] == '1') {
         header('HTTP/1.1 500 Internal Server Error');
         echo json_encode(['success' => false, 'message' => 'PDF 생성 실패']);
         exit();
+    }
+    if (ob_get_length()) {
+        ob_clean();
     }
     header('Content-Type: application/pdf');
     header("Content-Disposition: attachment; filename=\"$fileName\"");
